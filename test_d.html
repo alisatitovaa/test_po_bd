@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Тренажёр тестов — Базы данных</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, sans-serif;
+      background: linear-gradient(145deg, #f0f4f8 0%, #e6ecf3 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .app-container {
+      width: 100%;
+      max-width: 950px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(20px);
+      background: #ffffff;
+      border-radius: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+      padding: 30px 25px;
+      transition: all 0.2s ease;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #0b2b44;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+      border-bottom: 2px solid #e9eef2;
+      padding-bottom: 15px;
+    }
+    nav {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      background: #f2f5f9;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #2c3e50;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.3px;
+    }
+    .nav-btn:hover {
+      background: #e3e9f2;
+    }
+    .nav-btn.active {
+      background: #0b2b44;
+      color: white;
+      box-shadow: 0 8px 16px rgba(11,43,68,0.25);
+    }
+    .page {
+      display: none;
+      animation: fade 0.3s ease;
+    }
+    .page.active-page {
+      display: block;
+    }
+    @keyframes fade {
+      from { opacity: 0.5; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .question-block {
+      background: #f8fafd;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 24px;
+      border: 1px solid #edf2f9;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+      transition: all 0.2s;
+    }
+    .question-block.wrong-highlight {
+      border-left: 5px solid #c44545;
+      background: #fff5f5;
+    }
+    .question-block.correct-highlight-block {
+      border-left: 5px solid #2e7d32;
+      background: #f0faf0;
+    }
+    .question-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #0b2b44;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-left: 8px;
+    }
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 0.98rem;
+      color: #1e293b;
+      transition: 0.1s;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .option-item input[type="radio"] {
+      accent-color: #0b2b44;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+      cursor: pointer;
+    }
+    .option-item.correct-answer {
+      background: #d4edda;
+      color: #155724;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+    .option-item.wrong-answer {
+      background: #f8d7da;
+      color: #721c24;
+      border-radius: 8px;
+    }
+    .text-input-answer {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid #dce3eb;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      background: white;
+      transition: 0.2s;
+      margin-top: 6px;
+    }
+    .text-input-answer.input-correct {
+      border-color: #2e7d32;
+      background: #e8f5e9;
+    }
+    .text-input-answer.input-wrong {
+      border-color: #c44545;
+      background: #ffebee;
+    }
+    .text-input-answer:focus {
+      outline: none;
+      border-color: #0b2b44;
+      box-shadow: 0 0 0 3px rgba(11,43,68,0.15);
+    }
+    .feedback-message {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: white;
+      border: 1.5px solid #cfdde9;
+      padding: 14px 28px;
+      border-radius: 30px;
+      font-weight: 600;
+      color: #0b2b44;
+      cursor: pointer;
+      background: #f9fcff;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+    .btn-primary {
+      background: #0b2b44;
+      border: 1.5px solid #0b2b44;
+      color: white;
+      box-shadow: 0 4px 10px rgba(11,43,68,0.3);
+    }
+    .btn-primary:hover {
+      background: #123a58;
+    }
+    .btn-small {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    .result-summary {
+      margin-top: 25px;
+      background: #eef3fa;
+      border-radius: 20px;
+      padding: 20px;
+      font-weight: 500;
+      color: #0b2b44;
+    }
+    .mistake-list {
+      margin-top: 15px;
+      background: #fff3f3;
+      border-radius: 16px;
+      padding: 15px;
+    }
+    hr {
+      border: 0.5px solid #e2e8f0;
+      margin: 18px 0 8px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .input-row .text-input-answer {
+      flex: 1;
+      min-width: 200px;
+    }
+    @media (max-width: 500px) {
+      .app-container {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <h1>🗄️ Тренировка БД</h1>
+  <nav>
+    <button id="btnFullTest" class="nav-btn active">📋 Полный тест (все 28+26)</button>
+    <button id="btnRandom20" class="nav-btn">🎲 Случайные 20 вопросов</button>
+  </nav>
+
+  <div id="fullTestPage" class="page active-page"></div>
+  <div id="random20Page" class="page"></div>
+</div>
+
+<script>
+  (function() {
+    // ---------- БАНК ВОПРОСОВ ----------
+    const mcQuestions = [
+      { id:1, text:"Базы данных - это:", options:["сложная программа, направленная учет входящей информации","именованная совокупность данных, отражающая состояние объектов и их отношений в рассматриваемой предметной области","бесконечный объем данных, постоянно управляющийся с помощью СУБД"], correct:1 },
+      { id:2, text:"Расширением файла БД является:", options:[".f2",".mdb, .db",".mcs"], correct:1 },
+      { id:3, text:"Слово Null в БД используется для обозначения:", options:["неопределенных значений","отсутствие данных","нуля"], correct:1 },
+      { id:4, text:"Что такое кортеж?", options:["совокупность атрибутов","множество пар атрибутов и их значений","схема отношений данных"], correct:1 },
+      { id:5, text:"В отличие от пользовательского типа данных базовые типы данных:", options:["присутствуют в СУБД изначально","должны быть в любой БД","имеют более простую структуру"], correct:0 },
+      { id:6, text:"Пример фактографической БД:", options:["законодательный акт","приказ по учреждению","сведения о патентах"], correct:2 },
+      { id:7, text:"Информационная система - это?", options:["совокупность БД и СУБД","комплекс аппаратно-программных средств, предназначенных для работы с информацией","совокупность данных"], correct:1 },
+      { id:8, text:"Сетевая БД предполагает:", options:["наличие как вертикальных, так и горизонтальных иерархических связей","связи между несколькими таблицами","связи между данными в виде дерева"], correct:0 },
+      { id:9, text:"Как расшифровывается SQL?", options:["structured query language","strict question line","strong question language"], correct:0 },
+      { id:10, text:"Запрос для выборки всех значений из таблицы «Persons» имеет вид:", options:["SELECT ALL Persons","SELECT * FROM Persons","SELECT .[Persons]"], correct:1 },
+      { id:11, text:"Наиболее распространенным является тип объединения:", options:["INNER JOIN","FULL JOIN","LEFT JOIN"], correct:0 },
+      { id:12, text:"Что возвращает запрос SELECT * FROM Students?", options:["Все записи из таблицы «Students»","Рассчитанное суммарное количество записей в таблице «Students»","Внутреннюю структуру таблицы «Students»"], correct:0 },
+      { id:13, text:"Какая агрегатная функция используется для расчета суммы?", options:["SUM","AVG","COUNT"], correct:0 },
+      { id:14, text:"Основное отличие реляционной БД:", options:["данные организовываются в виде отношений","строго древовидная структура","представлена в виде графов"], correct:0 },
+      { id:15, text:"Мощность отношений - это:", options:["количество веток в графовой системе","порядок подчинения данных в древовидной структуре БД","количество кортежей в отношении"], correct:2 },
+      { id:16, text:"Главное условие сравнимых отношений:", options:["одинаковая схема отношений","точное количество сравнимых признаков","наличие количественных признаков"], correct:0 },
+      { id:17, text:"Операция проекции направлена на:", options:["накладывание данных одной БД на данные другой БД","выборку данных согласно заданным атрибутам","сравнение БД на основе схожести"], correct:1 },
+      { id:18, text:"Поле \"Счетчик\" отличается тем, что:", options:["обязательно должны вводиться целые числа","в поле хранится только значение, а сами данные в другом поле","в нем происходит автоматическое наращивание"], correct:2 },
+      { id:19, text:"Основные понятия иерархической БД:", options:["таблица, столбец, строка","уровень, узел, связь","отношение, атрибут, кортеж"], correct:1 },
+      { id:20, text:"В чем особенность фактографической БД?", options:["содержит краткие сведения об описываемых объектах, представленные в строго определенном формате","содержит информацию разного типа","содержит информацию определенного типа"], correct:0 },
+      { id:21, text:"Какую модель данных можно изобразить графом, представленным на рисунке? (сетевая)", options:["реляционная","иерархическая","сетевая"], correct:2 },
+      { id:22, text:"Наиболее точный аналог реляционной БД:", options:["двумерная таблица","вектор","неупорядоченное множество данных"], correct:0 },
+      { id:23, text:"Для создания новой таблицы в существующей базе данных используют команду:", options:["NEW TABLE","CREATE TABLE","MAKE TABLE"], correct:1 },
+      { id:24, text:"Какое выражение используется для возврата только разных значений?", options:["SELECT DISCINCT","SELECT DIFFERENT","SELECT UNIQUE"], correct:0 },
+      { id:25, text:"Для подсчета количества записей в таблице «Persons» используется команда:", options:["COUNT ROW IN Persons","SELECT COUNT(*) FROM Persons","SELECT ROWS FROM Persons"], correct:0 },
+      { id:26, text:"Запрос «SELECT name ___ Employees WHERE age ___ 35 AND 50» возвращает имена работников, возраст которых от 35 до 50 лет. Заполните пропущенные места в запросе.", options:["INTO, IN","FROM, IN","FROM, BETWEEN"], correct:2 },
+      { id:27, text:"Запрос для выборки первых 14 записей из таблицы «Users» имеет вид:", options:["SELECT * FROM Users LIMIT 14","SELECT * LIMIT 14 FROM Users","SELECT * FROM USERS"], correct:1 },
+      { id:28, text:"Выберите верное утверждение:", options:["SQL чувствителен к регистру при написании запросов","SQL чувствителен к регистру в названиях таблиц при написании запросов","SQL ключевые слова нечувствительны к регистру"], correct:2 }
+    ];
+
+    const openQuestions = [
+      { id:101, text:"Программы с помощью которых пользователи работают с базами данных.", correct:"Приложение" },
+      { id:102, text:"Совокупность языковых и программных средств, предназначенных для создания, ведения и совместного использования БД многими пользователями.", correct:"СУБД" },
+      { id:103, text:"Именованная совокупность данных, отражающая состояние объектов и их отношений в рассматриваемой предметной области.", correct:"База данных" },
+      { id:104, text:"Система специальным образом организованных данных - баз данных, программных, технических, языковых, организационно-методических средств, предназначенных для обеспечения централизованного накопления и коллективного многоцелевого использования данных.", correct:"Банк данных" },
+      { id:105, text:"Верхний уровень в трех уровневой архитектуре СУБД, где каждая модель имеет свое «видение» данных.", correct:"Уровень внешних моделей" },
+      { id:106, text:"Последовательность операций над БД, рассматриваемых СУБД как единое целое.", correct:"Транзакция" },
+      { id:107, text:"Операция, фиксирующая успешное выполнение транзакции.", correct:"COMMIT" },
+      { id:108, text:"Порядок планирования работы транзакций, при котором суммарный эффект смеси транзакций эквивалентен эффекту их некоторого последовательного выполнения.", correct:"Сериализация" },
+      { id:109, text:"Особая часть БД, недоступная пользователям СУБД и поддерживаемая с особой тщательностью в которую поступают записи обо всех изменениях основной части БД.", correct:"Журнал" },
+      { id:110, text:"Число атрибутов отношения.", correct:"Степень" },
+      { id:111, text:"Число кортежей отношения.", correct:"Мощность" },
+      { id:112, text:"Совокупность отношений, содержащая всю информацию, которая должна храниться в базе данных.", correct:"Реляционная база данных" },
+      { id:113, text:"Какая теория лежит в основе реляционной модели данных?", correct:"Теория множеств" },
+      { id:114, text:"Классический подход, при котором весь процесс проектирования производится в терминах реляционной модели данных методом последовательных приближений к удовлетворительному набору схем отношений.", correct:"Нормализация" },
+      { id:115, text:"Моделирование предметной области, базирующееся на использовании графических диаграмм, включающих небольшое число разнородных компонентов.", correct:"ER-диаграмма" },
+      { id:116, text:"Реальный или представляемый объект, информация о котором должна сохраняться и быть доступна.", correct:"Сущность" },
+      { id:117, text:"Графически изображаемая ассоциация, устанавливаемая между двумя сущностями.", correct:"Связь" },
+      { id:118, text:"Процесс поддержания двух (или более) наборов данных в согласованном состоянии.", correct:"Репликация" },
+      { id:119, text:"Поле (или набор полей), которые уникально идентифицируют строку.", correct:"Первичный ключ" },
+      { id:120, text:"Процесс создания описания конкретной реализации базы данных.", correct:"Физическое проектирование" },
+      { id:121, text:"База данных, включающая фрагменты из нескольких баз данных, которые располагаются на различных узлах сети компьютеров и, возможно управляются различными СУБД.", correct:"Распределенная база данных" },
+      { id:122, text:"Подход, при котором большая база данных разбивается на более мелкие, быстрые и управляемые части.", correct:"Сегментация баз данных" },
+      { id:123, text:"Соответствие имеющейся в базе данных информации ее внутренней логике, структуре и всем явно заданным правилам.", correct:"Целостность данных" },
+      { id:124, text:"Поле или набор полей, которые содержат первичный ключ другой таблицы.", correct:"Внешний ключ" },
+      { id:125, text:"Группа типов БД, предлагающих подходы, отличные от стандартного реляционного шаблона.", correct:"NoSQL" },
+      { id:126, text:"База данных, в которой для хранения информации предоставляется ключ и объект данных, который нужно сохранить.", correct:"Ключ-значение" }
+    ];
+
+    const fullTestPage = document.getElementById('fullTestPage');
+    const random20Page = document.getElementById('random20Page');
+    const btnFull = document.getElementById('btnFullTest');
+    const btnRandom = document.getElementById('btnRandom20');
+
+    function setActivePage(pageId) {
+      fullTestPage.classList.remove('active-page');
+      random20Page.classList.remove('active-page');
+      btnFull.classList.remove('active');
+      btnRandom.classList.remove('active');
+      if (pageId === 'full') {
+        fullTestPage.classList.add('active-page');
+        btnFull.classList.add('active');
+      } else {
+        random20Page.classList.add('active-page');
+        btnRandom.classList.add('active');
+      }
+    }
+
+    btnFull.addEventListener('click', ()=> setActivePage('full'));
+    btnRandom.addEventListener('click', ()=> setActivePage('random'));
+
+    // ---------- ПОЛНЫЙ ТЕСТ С МГНОВЕННОЙ ОБРАТНОЙ СВЯЗЬЮ ----------
+    function renderFullTest() {
+      let html = '<h2 style="margin-bottom:12px;">📚 Все 54 вопроса (28 тест + 26 открытых)</h2>';
+      mcQuestions.forEach((q, idx) => {
+        html += `<div class="question-block" data-qid="${q.id}" data-type="mc" id="full-mc-${q.id}">`;
+        html += `<div class="question-title">${idx+1}. ${q.text}</div>`;
+        html += `<div class="options">`;
+        q.options.forEach((opt, optIdx) => {
+          html += `<label class="option-item" data-optindex="${optIdx}"><input type="radio" name="mc_${q.id}" value="${optIdx}"> ${opt}</label>`;
+        });
+        html += `</div><div class="feedback-message" id="fb-mc-${q.id}" style="margin-top:8px;"></div></div>`;
+      });
+      openQuestions.forEach((q, idx) => {
+        const num = mcQuestions.length + idx + 1;
+        html += `<div class="question-block" data-qid="${q.id}" data-type="open" id="full-open-${q.id}">`;
+        html += `<div class="question-title">${num}. ${q.text}</div>`;
+        html += `<div class="input-row">`;
+        html += `<input type="text" class="text-input-answer" placeholder="Введите ответ" autocomplete="off" data-openid="${q.id}" id="open-input-${q.id}">`;
+        html += `<button class="btn btn-small" id="check-open-btn-${q.id}">✔ Проверить</button>`;
+        html += `</div>`;
+        html += `<div class="feedback-message" id="fb-open-${q.id}" style="margin-top:8px;"></div>`;
+        html += `</div>`;
+      });
+      html += `<div class="actions"><button class="btn btn-primary" id="checkFullBtn">📊 Подвести итог</button></div>`;
+      html += `<div id="fullResult" class="result-summary" style="display:none;"></div>`;
+      fullTestPage.innerHTML = html;
+
+      // Обработчики для мгновенной проверки MC
+      mcQuestions.forEach(q => {
+        const radios = document.querySelectorAll(`input[name="mc_${q.id}"]`);
+        radios.forEach(radio => {
+          radio.addEventListener('change', function(e) {
+            const selectedValue = parseInt(e.target.value);
+            const block = document.getElementById(`full-mc-${q.id}`);
+            const fb = document.getElementById(`fb-mc-${q.id}`);
+            const labels = block.querySelectorAll('.option-item');
+            labels.forEach(l => l.classList.remove('correct-answer', 'wrong-answer'));
+            block.classList.remove('wrong-highlight', 'correct-highlight-block');
+
+            if (selectedValue === q.correct) {
+              fb.innerHTML = '✅ Верно!';
+              fb.style.color = '#2e7d32';
+              block.classList.add('correct-highlight-block');
+              labels[q.correct].classList.add('correct-answer');
+            } else {
+              fb.innerHTML = `❌ Неверно. Правильный ответ: <strong>${q.options[q.correct]}</strong>`;
+              fb.style.color = '#c44545';
+              block.classList.add('wrong-highlight');
+              labels[selectedValue].classList.add('wrong-answer');
+              labels[q.correct].classList.add('correct-answer');
+            }
+          });
+        });
+      });
+
+      // Обработчики для кнопок "Проверить" у открытых вопросов
+      openQuestions.forEach(q => {
+        const checkBtn = document.getElementById(`check-open-btn-${q.id}`);
+        if (checkBtn) {
+          checkBtn.addEventListener('click', function() {
+            checkOpenQuestion(q.id);
+          });
+        }
+        // Также проверка по Enter в поле ввода
+        const input = document.getElementById(`open-input-${q.id}`);
+        if (input) {
+          input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              checkOpenQuestion(q.id);
+            }
+          });
+        }
+      });
+
+      document.getElementById('checkFullBtn').addEventListener('click', function() {
+        // Проверяем все открытые вопросы, которые ещё не проверены
+        openQuestions.forEach(q => checkOpenQuestion(q.id));
+        // Считаем итог
+        let correctCount = 0;
+        mcQuestions.forEach(q => {
+          const block = document.getElementById(`full-mc-${q.id}`);
+          if (block && block.classList.contains('correct-highlight-block')) correctCount++;
+        });
+        openQuestions.forEach(q => {
+          const input = document.getElementById(`open-input-${q.id}`);
+          if (input && input.classList.contains('input-correct')) correctCount++;
+        });
+        const total = mcQuestions.length + openQuestions.length;
+        const resultDiv = document.getElementById('fullResult');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `📊 Правильно: ${correctCount} из ${total} (${Math.round(correctCount/total*100)}%)`;
+      });
+    }
+
+    function checkOpenQuestion(qid) {
+      const input = document.getElementById(`open-input-${qid}`);
+      const fb = document.getElementById(`fb-open-${qid}`);
+      const block = document.getElementById(`full-open-${qid}`);
+      if (!input || !fb || !block) return;
+      const question = openQuestions.find(q => q.id === qid);
+      if (!question) return;
+      const userAns = input.value.trim();
+      input.classList.remove('input-correct', 'input-wrong');
+      block.classList.remove('wrong-highlight', 'correct-highlight-block');
+
+      if (userAns === '') {
+        fb.innerHTML = '⚠️ Введите ответ перед проверкой.';
+        fb.style.color = '#e67e22';
+        return;
+      }
+
+      if (userAns.toLowerCase() === question.correct.toLowerCase()) {
+        fb.innerHTML = '✅ Верно!';
+        fb.style.color = '#2e7d32';
+        input.classList.add('input-correct');
+        block.classList.add('correct-highlight-block');
+      } else {
+        fb.innerHTML = `❌ Неверно. Правильный ответ: <strong>${question.correct}</strong>`;
+        fb.style.color = '#c44545';
+        input.classList.add('input-wrong');
+        block.classList.add('wrong-highlight');
+      }
+    }
+
+    // ---------- СЛУЧАЙНЫЕ 20 ВОПРОСОВ С ПОДРОБНЫМ РАЗБОРОМ ОШИБОК ----------
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function getRandom20Questions() {
+      const shuffledMC = shuffleArray([...mcQuestions]);
+      const shuffledOpen = shuffleArray([...openQuestions]);
+      const selectedMC = shuffledMC.slice(0, 10);
+      const selectedOpen = shuffledOpen.slice(0, 10);
+      const combined = [...selectedMC.map(q=>({...q, type:'mc'})), ...selectedOpen.map(q=>({...q, type:'open'}))];
+      return shuffleArray(combined);
+    }
+
+    let currentRandomQuestions = [];
+
+    function renderRandom20() {
+      currentRandomQuestions = getRandom20Questions();
+      let html = '<h2 style="margin-bottom:12px;">🎲 20 случайных вопросов (10 тест + 10 вписать)</h2>';
+      currentRandomQuestions.forEach((q, idx) => {
+        if (q.type === 'mc') {
+          html += `<div class="question-block" data-qid="${q.id}" data-type="mc" id="rand-block-${idx}">`;
+          html += `<div class="question-title">${idx+1}. ${q.text}</div><div class="options">`;
+          q.options.forEach((opt, optIdx) => {
+            html += `<label class="option-item" data-optindex="${optIdx}"><input type="radio" name="rand_mc_${idx}" value="${optIdx}"> ${opt}</label>`;
+          });
+          html += `</div><div class="feedback-message" id="rand-fb-${idx}" style="margin-top:8px;"></div></div>`;
+        } else {
+          html += `<div class="question-block" data-qid="${q.id}" data-type="open" id="rand-block-${idx}">`;
+          html += `<div class="question-title">${idx+1}. ${q.text}</div>`;
+          html += `<input type="text" class="text-input-answer" placeholder="Введите ответ" id="rand-open-${idx}">`;
+          html += `<div class="feedback-message" id="rand-fb-${idx}" style="margin-top:8px;"></div>`;
+          html += `</div>`;
+        }
+      });
+      html += `<div class="actions"><button class="btn btn-primary" id="checkRandomBtn">🔍 Проверить 20 вопросов</button> <button class="btn" id="refreshRandomBtn">🔄 Новый набор</button></div>`;
+      html += `<div id="randomResult" class="result-summary" style="display:none;"></div>`;
+      random20Page.innerHTML = html;
+      document.getElementById('checkRandomBtn').addEventListener('click', checkRandom20);
+      document.getElementById('refreshRandomBtn').addEventListener('click', renderRandom20);
+    }
+
+    function checkRandom20() {
+      let correct = 0;
+      const total = currentRandomQuestions.length;
+      let mistakesHtml = '';
+      const mistakes = [];
+
+      currentRandomQuestions.forEach((q, idx) => {
+        const block = document.getElementById(`rand-block-${idx}`);
+        const fb = document.getElementById(`rand-fb-${idx}`);
+        block.classList.remove('wrong-highlight', 'correct-highlight-block');
+        fb.innerHTML = '';
+
+        if (q.type === 'mc') {
+          const selected = document.querySelector(`input[name="rand_mc_${idx}"]:checked`);
+          const labels = block.querySelectorAll('.option-item');
+          labels.forEach(l => l.classList.remove('correct-answer', 'wrong-answer'));
+
+          if (selected && parseInt(selected.value) === q.correct) {
+            correct++;
+            fb.innerHTML = '✅ Верно!';
+            fb.style.color = '#2e7d32';
+            block.classList.add('correct-highlight-block');
+            labels[q.correct].classList.add('correct-answer');
+          } else {
+            fb.innerHTML = `❌ Неверно. Правильный ответ: <strong>${q.options[q.correct]}</strong>`;
+            fb.style.color = '#c44545';
+            block.classList.add('wrong-highlight');
+            if (selected) {
+              labels[parseInt(selected.value)].classList.add('wrong-answer');
+            }
+            labels[q.correct].classList.add('correct-answer');
+            mistakes.push({num: idx+1, text: q.text, userAnswer: selected ? q.options[parseInt(selected.value)] : '(не выбрано)', correctAnswer: q.options[q.correct]});
+          }
+        } else {
+          const input = document.getElementById(`rand-open-${idx}`);
+          input.classList.remove('input-correct', 'input-wrong');
+          const userAns = input ? input.value.trim() : '';
+          if (userAns.toLowerCase() === q.correct.toLowerCase()) {
+            correct++;
+            fb.innerHTML = '✅ Верно!';
+            fb.style.color = '#2e7d32';
+            input.classList.add('input-correct');
+            block.classList.add('correct-highlight-block');
+          } else {
+            fb.innerHTML = `❌ Неверно. Правильный ответ: <strong>${q.correct}</strong>`;
+            fb.style.color = '#c44545';
+            input.classList.add('input-wrong');
+            block.classList.add('wrong-highlight');
+            mistakes.push({num: idx+1, text: q.text, userAnswer: userAns || '(пусто)', correctAnswer: q.correct});
+          }
+        }
+      });
+
+      const resDiv = document.getElementById('randomResult');
+      resDiv.style.display = 'block';
+      let resultHtml = `🎯 Верно: ${correct} из ${total} (${Math.round(correct/total*100)}%)`;
+      if (mistakes.length > 0) {
+        resultHtml += `<div class="mistake-list"><strong>⚠️ Ошибки (${mistakes.length}):</strong><ul style="margin-top:8px; padding-left:20px;">`;
+        mistakes.forEach(m => {
+          resultHtml += `<li><strong>Вопрос ${m.num}:</strong> ${m.text}<br>Ваш ответ: <span style="color:#c44545;">${m.userAnswer}</span> → Правильный: <span style="color:#2e7d32;">${m.correctAnswer}</span></li>`;
+        });
+        resultHtml += `</ul></div>`;
+      }
+      resDiv.innerHTML = resultHtml;
+    }
+
+    // Инициализация
+    renderFullTest();
+    renderRandom20();
+    setActivePage('full');
+  })();
+</script>
+</body>
+</html>
